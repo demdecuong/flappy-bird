@@ -1,17 +1,19 @@
 import React from 'react'
 import BirdImg from '../img/bird.png'
+import {connect} from 'react-redux'
 
-
-const Bird = () => {
+const Bird = ({y,rotation}) => {
     return(
         <div
             style={{
                 position:'absolute',
-                top:250,
-                left:150,
+                top:y,
+                left:120,
                 width:40,
                 height:40,
-                background: `url(${BirdImg})`
+                background: `url(${BirdImg})`,
+                transform: `rotate(${rotation}deg)`,
+                transition: 'transform 200ms,top 200ms',
             }}
         >
 
@@ -19,4 +21,8 @@ const Bird = () => {
     )
 }
 
-export default Bird
+
+const mapStateToProps = ({Bird}) => ({y: Bird.y, rotation: Bird.rotation});
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps,mapDispatchToProps) (Bird);
