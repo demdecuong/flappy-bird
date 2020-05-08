@@ -6,17 +6,24 @@ import BackgroundImg from '../img/background.png'
 
 import { connect } from 'react-redux'
 
+let gameLoop
+let pipeGenerator
+let WIDTH = 288
+
+
 const Game = ({ status, start, flyAction }) => {
+    if (status === 'game-over') {
+        clearInterval(gameLoop)
+        clearInterval(pipeGenerator)
+    }
     useEffect(() => {
         const handleKeyPress = (e) => {
-            if (e.keyCode == 32) {
+            if (e.keyCode === 32) {
                 flyAction();
             }
-
             if (status !== 'playing') {
                 start();
             }
-
         }
         document.addEventListener('keypress', handleKeyPress)
     }, [])
@@ -44,24 +51,65 @@ const flyAction = () => {
     return (dispatch) => {
         dispatch({ type: 'FLY' })
     }
-    console.log("Fly")
+
 }
+
 const start = () => {
     return (dispatch, getState) => {
         const { status } = getState().Game
 
         if (status !== 'playing') {
-            setInterval(() => {
+            gameLoop = setInterval(() => {
                 dispatch({ type: 'FALL' })
                 dispatch({ type: 'RUNNING' })
-            }, 300)
 
-            setInterval(()=>{
+                check(dispatch,getState)
+            }, 200)
+
+            pipeGenerator = setInterval(() => {
                 dispatch({ type: 'GENERATE' })
-            },3000)
+            }, 3000)
             dispatch({ type: 'START' })
         }
     }
+}
+
+const check = (dispatch, getState) => {
+    const state = getState()
+    const birdY = state.Bird.y
+    const pipes = state.Pipe.pipes
+    const x = state.Pipe.x
+
+    const challenge = pipes.map(({ topHeight }, i) => {
+        return {
+            x1: x + i * 200,
+            y1: topHeight,
+            x2: x + i * 200,
+            y2: topHeight + 100,
+        }
+    }).filter(({ x1 }) => {
+        if (x1 > 0 && x1 < WIDTH) {
+            return true
+        }
+    })
+    // backgroundY = 505 , foregroundY = 100
+    if (birdY > 505 - 100 - 19) {
+        dispatch({ type: 'GAME_OVER' });
+    }
+
+    if (challenge.length) {
+        const { x1, y1, x2, y2 } = challenge[0]
+
+        let birdX = 40
+
+        if (
+            (x1 - 20 <= 120 && 120 < x1 + birdX && birdY - 5 <= y1) ||
+            (x1 - 20 <= 120 && 120 < x1 + birdX && birdY + 10 >= y2)
+        ) {
+            dispatch({ type: 'GAME_OVER' });
+        }
+    }
+
 }
 
 const mapStateToProps = ({ Game }) => ({ status: Game.status })

@@ -6,13 +6,15 @@ const initialState = {
 
 }
 
-export default (state = initialState, {type} = {}) => {
-    switch(type){
+export default (state = initialState, { type } = {}) => {
+    switch (type) {
         case 'RUNNING':
-            return {...state, x: state.x - 10}
+            return { ...state, x: state.x - 10 }
         case 'GENERATE':
             const topHeight = Math.round(Math.random() * 200) + 40;
-            return{...state, pipes: [...state.pipes,{topHeight}]}
+            return { ...state, pipes: [...state.pipes, { topHeight }] }
+        case 'GAME_OVER':
+            return initialState;
         default:
             return state;
     }
